@@ -4,6 +4,7 @@ import { ServerWithMembersWithProfiles } from "@/types";
 import { MemberRole } from "@prisma/client";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ChevronDown, UserPlus, Settings, Users, PlusCircle, Trash, LogOut } from "lucide-react";
+import { useModal } from "@/hooks/use-modal-store";
 // lucide-react : 아이콘 확장해서 사용하는 라이브러리인듯. 
 
 interface ServerHeaderProps {
@@ -15,6 +16,8 @@ export const ServerHeader = ({
     server,
     role
 }: ServerHeaderProps) => {
+    const { onOpen } = useModal();
+
     const isAdmin = role === MemberRole.ADMIN;
     const isModerator = isAdmin || role === MemberRole.MODERATOR;
 
@@ -39,6 +42,7 @@ export const ServerHeader = ({
             >
                 {isModerator && (
                     <DropdownMenuItem
+                        onClick={() => onOpen("invite", { server })}
                         className="text-indigo-600 dark:text-indigo-400 px-3 py-2 text-sm cursor-pointer"
                     >
                         Invite People
@@ -47,6 +51,7 @@ export const ServerHeader = ({
                 )}
                 {isAdmin && (
                     <DropdownMenuItem
+                        onClick={() => onOpen("editServer", { server })}
                         className="px-3 py-2 text-sm cursor-pointer"
                     >
                         Server Settings
@@ -55,6 +60,7 @@ export const ServerHeader = ({
                 )}
                 {isAdmin && (
                     <DropdownMenuItem
+                        onClick={() => onOpen("members", { server })}
                         className="px-3 py-2 text-sm cursor-pointer"
                     >
                         Manage Members
