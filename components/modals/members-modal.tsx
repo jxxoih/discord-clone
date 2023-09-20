@@ -4,6 +4,7 @@ import qs from "query-string";
 import axios from "axios";
 import { MoreVertical, Check, Shield, ShieldCheck, ShieldAlert, ShieldQuestion, Gavel, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { MemberRole } from "@prisma/client";
 
 
@@ -39,11 +40,34 @@ const roleIconMap = {
 }
 
 export const MembersModal = () => {
+    const router = useRouter();
     const { onOpen, isOpen, onClose, type, data } = useModal();
     const [loadingId, setLoadingId] = useState("");
 
     const isModalOpen = isOpen && type === "members";
     const { server } = data as { server: ServerWithMembersWithProfiles };
+
+    const onKick = async (memberId: string) => {
+        try {
+            setLoadingId(memberId);
+
+            const url = qs.stringifyUrl({
+                url: `/api/members/${memberId}`,
+                query: {
+                    serverId: server?.id,
+                },
+            });
+
+            const response = await axios.delete(url);
+
+            router.refresh();
+            onOpen("members", { server: response.data });
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoadingId("");
+        }
+    }
 
     const onRoleChange = async (memberId: string, role: MemberRole) => {
         try {
@@ -52,12 +76,13 @@ export const MembersModal = () => {
                 url: `/api/members/${memberId}`,
                 query: {
                     serverId: server?.id,
-                    memberId,
                 }
             });
 
-            const response = await axios.patch(url);
+            const response = await axios.patch(url, { role });
 
+            router.refresh();
+            onOpen("members", { server: response.data });
         } catch (error) {
             console.log(error);
         } finally {
@@ -107,11 +132,12 @@ export const MembersModal = () => {
                                                         className="w-4 h-4 mr-2"
                                                     />
                                                     <span>Role</span>
-
                                                 </DropdownMenuSubTrigger>
                                                 <DropdownMenuPortal>
                                                     <DropdownMenuSubContent>
-                                                        <DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            onClick={() => onRoleChange(member.id, "GUEST")}
+                                                        >
                                                             <Shield className="h-4 w-4 mr-2" />
                                                             Guest
                                                             {member.role === "GUEST" && (
@@ -120,7 +146,9 @@ export const MembersModal = () => {
                                                                 />
                                                             )}
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            onClick={() => onRoleChange(member.id, "MODERATOR")}
+                                                        >
                                                             <ShieldCheck className="h-4 w-4 mr-2" />
                                                             Moderator
                                                             {member.role === "MODERATOR" && (
@@ -133,7 +161,9 @@ export const MembersModal = () => {
                                                 </DropdownMenuPortal>
                                             </DropdownMenuSub>
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onClick={()=> onKick(member.id)}
+                                            >
                                                 <Gavel className="h-4 w-4 mr-2" />
                                                 Kick
                                             </DropdownMenuItem>
