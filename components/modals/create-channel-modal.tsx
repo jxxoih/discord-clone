@@ -33,10 +33,11 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
+import { useEffect } from "react";
 
 const formSchema = z.object({
     name: z.string().min(1, {
-        message: "Server name is required."
+        message: "Channel name is required."
     }).refine(
         name => name !== "general",
         {
@@ -47,19 +48,28 @@ const formSchema = z.object({
 });
 
 export const CreateChannelModal = () => {
-    const { isOpen, onClose, type } = useModal();
+    const { isOpen, onClose, type, data } = useModal();
     const router = useRouter();
     const params = useParams();
 
     const isModalOpen = isOpen && type === "createChannel";
+    const { channelType } = data;
 
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: "",
-            type: ChannelType.TEXT,
+            type: channelType || ChannelType.TEXT,
         }
     });
+
+    useEffect(() => {
+        if (channelType) {
+            form.setValue("type", channelType);
+        } else {
+            form.setValue("type", ChannelType.TEXT);
+        }
+    }, [channelType, form]);
 
     const isLoading = form.formState.isSubmitting;
 
@@ -71,8 +81,7 @@ export const CreateChannelModal = () => {
                     serverId: params?.serverId
                 }
             });
-
-            await axios.post("/api/channels", values);
+            await axios.post(url, values);
 
             form.reset();
             router.refresh();
@@ -89,10 +98,9 @@ export const CreateChannelModal = () => {
 
     return (
         <Dialog open={isModalOpen} onOpenChange={handleClose}>
-            <DialogContent
-                className="bg-white text-black p-0 overflow-hidden">
+            <DialogContent className="bg-white text-black p-0 overflow-hidden">
                 <DialogHeader className="pt-8 px-6">
-                    <DialogTitle className="text-2xl text-center" >
+                    <DialogTitle className="text-2xl text-center font-bold">
                         Create Channel
                     </DialogTitle>
                 </DialogHeader>
@@ -134,10 +142,7 @@ export const CreateChannelModal = () => {
                                         >
                                             <FormControl>
                                                 <SelectTrigger
-                                                    className="bg-zinc-300/50 border-0
-                                            focus:ring-0 text-black ring-offset-0
-                                            focus:ring-offset-0 capitalize
-                                            outline-none"
+                                                    className="bg-zinc-300/50 border-0 focus:ring-0 text-black ring-offset-0 focus:ring-offset-0 capitalize outline-none"
                                                 >
                                                     <SelectValue placeholder="Select a channel type" />
                                                 </SelectTrigger>
@@ -154,6 +159,7 @@ export const CreateChannelModal = () => {
                                                 ))}
                                             </SelectContent>
                                         </Select>
+                                        <FormMessage />
                                     </FormItem>
                                 )}
                             />
