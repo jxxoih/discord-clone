@@ -31,8 +31,9 @@ export const NavigationItem = ({
                 align="center"
                 label={name}>
                 <button
-                    className="group relative fkex items-center"
-                    onClick={onClick}>
+                    className="group relative flex items-center"
+                    onClick={onClick}
+                >
                     <div className={cn(
                         "absolute left-0 bg-primary rounded-r-full transition-all w-[4px]",
                         params?.serverId !== id && "group-hover:h-[20px]",
