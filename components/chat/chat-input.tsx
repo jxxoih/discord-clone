@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useModal } from "@/hooks/use-modal-store";
-import { EmojiPicket } from "@/components/emoji-picket";
+import { EmojiPicker } from "@/components/emoji-picker";
 
 interface ChatInputProps {
     apiUrl: string;
@@ -40,7 +40,7 @@ export const ChatInput = ({
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaulValue: {
+        defaultValue: {
             content: "",
         }
     });
@@ -93,7 +93,7 @@ export const ChatInput = ({
                                         {...field}
                                     />
                                     <div className="absolute top-7 right-8">
-                                        <EmojiPicket
+                                        <EmojiPicker
                                             onChange={(emoji: string) => field.onChange(`${field.value} ${emoji}`)}
                                         />
                                     </div>
