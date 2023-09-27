@@ -1,7 +1,7 @@
 import { currentProfile } from "@/lib/current-profile";
 import { channel } from "diagnostics_channel";
 import { NextResponse } from "next/server";
-import { Messages } from "@prisma/client";
+import { Message } from "@prisma/client";
 import { db } from "@/lib/db";
 
 const MESSAGES_BATCH = 10;
@@ -25,7 +25,7 @@ export async function GET(
             return new NextResponse("Channel ID missing", { status: 400 });
         }
 
-        let messages: Messages[] = [];
+        let messages: Message[] = [];
 
         if (cursor) {
             messages = await db.message.findMany({
@@ -73,6 +73,7 @@ export async function GET(
             nextCursor = messages[MESSAGES_BATCH - 1].id;
         }
 
+        console.log("messages::", messages)
         return NextResponse.json({
             items: messages,
             nextCursor

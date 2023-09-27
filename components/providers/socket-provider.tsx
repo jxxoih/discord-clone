@@ -43,7 +43,7 @@ export const SocketProvider = ({
 
         socketInstance.on("disconnect", () => {
             setIsConnected(false);
-        })
+        });
 
         setSocket(socketInstance);
 
