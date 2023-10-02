@@ -42,6 +42,7 @@ export const useChatQuery = ({
         queryFn: fetchMessages,
         getNextPageParam: (lastPage) => lastPage?.nextCursor,
         refetchInterval: isConnected ? false : 1000,
+        // 채팅 새로고침 시간
     });
 
     return {
