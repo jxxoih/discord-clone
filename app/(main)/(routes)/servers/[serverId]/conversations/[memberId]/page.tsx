@@ -1,10 +1,12 @@
 import { redirectToSignIn } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 
+import { db } from "@/lib/db";
 import { getOrCreateConversation } from "@/lib/conversation";
 import { currentProfile } from "@/lib/current-profile";
-import { db } from "@/lib/db";
 import { ChatHeader } from "@/components/chat/chat-header";
+import { ChatMessages } from "@/components/chat/chat-messages";
+import { ChatInput } from "@/components/chat/chat-input";
 
 interface MemberIdPageProps {
     params: {
@@ -36,13 +38,13 @@ const MemberIdPage = async ({
         return redirect("/");
     }
 
-    const converstaion = await getOrCreateConversation(currentMember.id, params.memberId);
+    const conversation = await getOrCreateConversation(currentMember.id, params.memberId);
 
-    if (!converstaion) {
+    if (!conversation) {
         return redirect(`/servers/${params.serverId}`);
     }
 
-    const { memberOne, memberTwo } = converstaion;
+    const { memberOne, memberTwo } = conversation;
 
     const otherMember = memberOne.profileId === profile.id ? memberTwo : memberOne;
 
@@ -55,6 +57,27 @@ const MemberIdPage = async ({
                 name={otherMember.profile.name}
                 serverId={params.serverId}
                 type="conversation"
+            />
+            <ChatMessages
+                member={currentMember}
+                name={otherMember.profile.name}
+                chatId={conversation.id}
+                type="conversation"
+                apiUrl="/api/direct-messages"
+                paramKey="conversationId"
+                paramValue={conversation.id}
+                socketUrl="/api/socket/direct-messages"
+                socketQuery={{
+                    conversationId: conversation.id,
+                }}
+            />
+            <ChatInput
+                name={otherMember.profile.name}
+                type="conversation"
+                apiUrl="/api/socket/direct-messages"
+                query={{
+                    conversationId: conversation.id,
+                }}
             />
         </div>
     );
